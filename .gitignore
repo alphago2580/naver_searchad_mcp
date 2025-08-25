@@ -1,0 +1,24 @@
+# Build artifacts
+dist/
+*.egg-info/
+__pycache__/
+
+# Envs / secrets
+.env
+.env.*
+api_keys.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+
+# Python cache
+*.pyc
+*.pyo
+*.pyd
+
+# Misc
+/.mypy_cache/
+/.pytest_cache/
+/.ruff_cache/
