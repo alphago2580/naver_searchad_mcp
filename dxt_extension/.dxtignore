@@ -1,0 +1,18 @@
+# Exclude VCS and caches
+.git/
+__pycache__/
+*.pyc
+*.log
+.env
+.env.*
+.build/
+.dist/
+
+# Tests (none currently but pattern in case)
+tests/
+
+# Local virtual envs
+venv/
+.envrc
+.bundle_venv/
+.bundle_venv
