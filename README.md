@@ -1,11 +1,21 @@
 # Naver SearchAd MCP 
 
+> ⚡ file system 확장이 설치된 claude desktop에게 이 페이지의 링크를 주고 설치하라고 명령해보세요.
+
 ## 설치
 
 ```bash
+# (A) 로컬 소스(현재 디렉터리)에서 설치: 저장소를 clone 하여 수정/개발 중일 때
 pip install .
+
+# (B) PyPI 배포본에서 설치: 일반 사용 시 (주석 해제하여 사용)
+# pip install naver-searchad-mcp
+
+# 설치 후 초기 실행 예시
 naver-searchad-mcp --api-key YOUR_KEY --secret-key YOUR_SECRET --customer-id YOUR_CID
 ```
+
+위에서 `pip install .` 는 "현재 디렉터리(점)"에 있는 패키지(소스)를 직접 설치하라는 의미이며, 패키지 이름이 점이 아니라 로컬 경로를 의미합니다. 패키지 레지스트리(Python Package Index)에 배포된 릴리스를 설치하려면 `pip install naver-searchad-mcp` 형태를 사용하세요.
 
 ## 모듈 실행
 
@@ -159,10 +169,13 @@ naver-searchad-mcp --api-key "YOUR_KEY" --secret-key "YOUR_SECRET" --customer-id
 ### 9. FAQ
 
 Q. 툴 목록에 안 보입니다.
+
 - A: config JSON에 `mcpServers` 루트 키가 존재하는지, JSON 파싱 오류가 없는지, 재시작했는지 확인.
 
 Q. 인증 오류(401/403)가 납니다.
+
 - A: 키/시크릿/CID 오타, 혹은 네이버 광고 API 권한 여부 재확인.
 
 Q. Windows에서 한글 경로 때문에 실행 실패.
+
 - A: Python 설치 경로에 공백/한글이 포함된 경우 `"command": "python"` 대신 절대경로 (`C:\\Python312\\python.exe`) 명시 권장.
