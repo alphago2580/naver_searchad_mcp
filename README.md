@@ -1,5 +1,5 @@
 # Naver SearchAd MCP 
-
+> ⚡ .dxt 추가
 > ⚡ file system 확장이 설치된 claude desktop에게 이 페이지의 링크를 주고 설치하라고 명령해보세요.
 
 ## 설치
