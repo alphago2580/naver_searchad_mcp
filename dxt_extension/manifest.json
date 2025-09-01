@@ -2,8 +2,8 @@
   "dxt_version": "0.1",
   "name": "naver-searchad",
   "display_name": "Naver SearchAd",
-  "version": "0.2.6",
-  "description": "Naver SearchAd keyword stats & bid estimate tools (embedded Python, no host Python needed)",
+  "version": "0.2.8",
+  "description": "Naver SearchAd keyword stats & bid estimate tools (auto-bootstrap dependencies on any host Python >=3.8 incl. 3.13)",
   "author": { "name": "Your Name", "email": "you@example.com" },
   "homepage": "https://github.com/alphago2580/naver_searchad_mcp",
   "repository": { "type": "git", "url": "https://github.com/alphago2580/naver_searchad_mcp" },
@@ -19,15 +19,6 @@
         "NAVER_API_KEY": "${user_config.api_key}",
         "NAVER_SECRET_KEY": "${user_config.secret_key}",
         "NAVER_CUSTOMER_ID": "${user_config.customer_id}"
-      },
-      "platform_overrides": {
-        "win32": {
-          "command": "${__dirname}/runtime/win32/python/python.exe",
-          "args": ["${__dirname}/server/main.py"],
-          "env": {
-            "PYTHONPATH": "${__dirname};${__dirname}/server/lib"
-          }
-        }
       }
     }
   },
@@ -39,8 +30,7 @@
   "prompts_generated": false,
   "keywords": ["naver","searchad","ads","marketing","mcp"],
   "compatibility": {
-    "claude_desktop": ">=0.10.0",
-    "platforms": ["win32"]
+    "claude_desktop": ">=0.10.0"
   },
   "user_config": {
     "api_key": {

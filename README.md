@@ -2,14 +2,14 @@
 
 > Naver SearchAd 키워드 통계, 입찰가 추정 툴을 Claude Desktop 에서 바로 호출할 수 있는 MCP 서버 / DXT 확장.
 
-## 🚀 일반 사용자: 가장 쉬운 설치 (임베디드 DXT)
+## 🚀 일반 사용자: 추천 설치 (0.2.8 DXT)
 
-Python 설치 필요 없음 (Windows).
+버전 0.2.8부터 Python 3.13 포함 어떤 호스트 Python(>=3.8)이 있어도 동작하거나, Python이 전혀 없어도 (임베디드 포함) 작동합니다. 부족한 라이브러리는 자동 캐시(사용자 홈 `~/.cache/naver_searchad_mcp/venv`)에 설치됩니다.
 
-1. 최신 `naver-searchad-embedded-lite-<version>.dxt` 파일 다운로드
+1. 최신 `naver-searchad-0.2.8.dxt` (또는 차후 더 최신) 다운로드
 2. Claude Desktop 열기 → Extensions 패널(또는 파일 드래그)로 .dxt 추가
-3. 확장 추가 UI에서 API Key / Secret / Customer ID 입력
-4. Tools 목록에서 `health` 실행 → `{ "status": "ok" }` 나오면 완료
+3. API Key / Secret / Customer ID 입력
+4. Tools 목록에서 `health` 실행 → `{ "status": "ok" }` 확인
 
 문제 시 Claude 로그에서 `[naver-searchad]` 메시지 참고.
 
@@ -118,10 +118,17 @@ dxt_extension/
 * 필요 최소 권한 키 사용
 * 의심 시 즉시 키 회전
 
-## 🧾 버전
+## 🧾 버전 / 변경 사항
 
-* 패키지: `0.2.6`
-* DXT manifest 동일 버전 태깅 (캐시 무효화 목적)
+### 최신 권장: 0.2.8
+ 
+* Python 버전 제한 manifest 블록 제거 → 3.13 경고 제거
+* `server/main.py`에 경량 부트스트랩 추가 (필요 시 fastmcp / pydantic 자동 설치)
+* 설명 갱신 (임베디드 + 호스트 겸용) <--- 이거안됨 왜안되는지 모름
+
+이전:
+ 
+* 0.2.6 / 0.2.7: 임베디드 중심, Python 3.13 경고 발생 가능
 
 ## 📄 라이선스
 
