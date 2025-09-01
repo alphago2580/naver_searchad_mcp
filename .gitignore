@@ -24,9 +24,8 @@ Thumbs.db
 /.ruff_cache/
 
 # DXT build artifacts / inspection
-# 기본적으로 모든 .dxt 산출물은 무시하지만 release/ 폴더에 넣은 정식 배포 파일은 추적
-*.dxt
-!release/*.dxt
+# 모든 .dxt 추적 (배포 산출물도 이력 관리) 원하면 아래 두 줄 사용 해제 상태 유지
+# 필요 시 특정 임시 산출물만 무시하려면 패턴을 세분화하세요 (예: *_temp.dxt)
 dxt_extension/_inspect/
 
 # Embedded runtime (can be re-generated)
