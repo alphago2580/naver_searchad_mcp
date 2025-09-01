@@ -1,11 +1,12 @@
 """Claude app integration utilities."""
 
 import json
+import os
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
-from ..utilities.logging import get_logger
+from fastmcp.utilities.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -16,6 +17,10 @@ def get_claude_config_path() -> Path | None:
         path = Path(Path.home(), "AppData", "Roaming", "Claude")
     elif sys.platform == "darwin":
         path = Path(Path.home(), "Library", "Application Support", "Claude")
+    elif sys.platform.startswith("linux"):
+        path = Path(
+            os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"), "Claude"
+        )
     else:
         return None
 
@@ -25,76 +30,102 @@ def get_claude_config_path() -> Path | None:
 
 
 def update_claude_config(
-    file: Path,
-    server_name: Optional[str] = None,
+    file_spec: str,
+    server_name: str,
     *,
-    with_editable: Optional[Path] = None,
-    with_packages: Optional[list[str]] = None,
-    force: bool = False,
+    with_editable: Path | None = None,
+    with_packages: list[str] | None = None,
+    env_vars: dict[str, str] | None = None,
 ) -> bool:
-    """Add the MCP server to Claude's configuration.
+    """Add or update a FastMCP server in Claude's configuration.
 
     Args:
-        file: Path to the server file
-        server_name: Optional custom name for the server. If not provided,
-                    defaults to the file stem
+        file_spec: Path to the server file, optionally with :object suffix
+        server_name: Name for the server in Claude's config
         with_editable: Optional directory to install in editable mode
         with_packages: Optional list of additional packages to install
-        force: If True, replace existing server with same name
+        env_vars: Optional dictionary of environment variables. These are merged with
+            any existing variables, with new values taking precedence.
+
+    Raises:
+        RuntimeError: If Claude Desktop's config directory is not found, indicating
+            Claude Desktop may not be installed or properly set up.
     """
     config_dir = get_claude_config_path()
     if not config_dir:
-        return False
+        raise RuntimeError(
+            "Claude Desktop config directory not found. Please ensure Claude Desktop"
+            " is installed and has been run at least once to initialize its config."
+        )
 
     config_file = config_dir / "claude_desktop_config.json"
     if not config_file.exists():
-        return False
+        try:
+            config_file.write_text("{}")
+        except Exception as e:
+            logger.error(
+                "Failed to create Claude config file",
+                extra={
+                    "error": str(e),
+                    "config_file": str(config_file),
+                },
+            )
+            return False
 
     try:
         config = json.loads(config_file.read_text())
         if "mcpServers" not in config:
             config["mcpServers"] = {}
 
-        # Use provided server_name or fall back to file stem
-        name = server_name or file.stem
-        if name in config["mcpServers"]:
-            if not force:
-                logger.warning(
-                    f"Server '{name}' already exists in Claude config. "
-                    "Use `--force` to replace.",
-                    extra={"config_file": str(config_file)},
-                )
-                return False
-            logger.info(
-                f"Replacing existing server '{name}' in Claude config",
-                extra={"config_file": str(config_file)},
-            )
+        # Always preserve existing env vars and merge with new ones
+        if (
+            server_name in config["mcpServers"]
+            and "env" in config["mcpServers"][server_name]
+        ):
+            existing_env = config["mcpServers"][server_name]["env"]
+            if env_vars:
+                # New vars take precedence over existing ones
+                env_vars = {**existing_env, **env_vars}
+            else:
+                env_vars = existing_env
 
         # Build uv run command
         args = ["run"]
 
+        # Collect all packages in a set to deduplicate
+        packages = {"fastmcp"}
+        if with_packages:
+            packages.update(pkg for pkg in with_packages if pkg)
+
+        # Add all packages with --with
+        for pkg in sorted(packages):
+            args.extend(["--with", pkg])
+
         if with_editable:
             args.extend(["--with-editable", str(with_editable)])
 
-        # Always include fastmcp
-        args.extend(["--with", "fastmcp"])
+        # Convert file path to absolute before adding to command
+        # Split off any :object suffix first
+        if ":" in file_spec:
+            file_path, server_object = file_spec.rsplit(":", 1)
+            file_spec = f"{Path(file_path).resolve()}:{server_object}"
+        else:
+            file_spec = str(Path(file_spec).resolve())
 
-        # Add additional packages
-        if with_packages:
-            for pkg in with_packages:
-                if pkg:
-                    args.extend(["--with", pkg])
+        # Add fastmcp run command
+        args.extend(["fastmcp", "run", file_spec])
 
-        args.append(str(file))
+        server_config: dict[str, Any] = {"command": "uv", "args": args}
 
-        config["mcpServers"][name] = {
-            "command": "uv",
-            "args": args,
-        }
+        # Add environment variables if specified
+        if env_vars:
+            server_config["env"] = env_vars
+
+        config["mcpServers"][server_name] = server_config
 
         config_file.write_text(json.dumps(config, indent=2))
         logger.info(
-            f"Added server '{name}' to Claude config",
+            f"Added server '{server_name}' to Claude config",
             extra={"config_file": str(config_file)},
         )
         return True

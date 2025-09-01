@@ -2,7 +2,7 @@
   "dxt_version": "0.1",
   "name": "naver-searchad",
   "display_name": "Naver SearchAd",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Naver SearchAd keyword stats & bid estimate tools (embedded Python, no host Python needed)",
   "author": { "name": "Your Name", "email": "you@example.com" },
   "homepage": "https://github.com/alphago2580/naver_searchad_mcp",

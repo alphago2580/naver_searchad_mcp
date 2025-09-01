@@ -1,5 +1,6 @@
 Param(
-  [string]$PythonExe = "python"
+  [string]$PythonExe = "python",
+  [string]$FastMcpVersion = "2.11.3"
 )
 
 $ErrorActionPreference = 'Stop'
@@ -10,14 +11,17 @@ if (Test-Path .bundle_venv) { Remove-Item -Recurse -Force .bundle_venv }
 Write-Host "[2/6] Upgrade pip" -ForegroundColor Cyan
 & .\.bundle_venv\Scripts\python -m pip install --upgrade pip > $null
 
-Write-Host "[3/6] Install dependencies" -ForegroundColor Cyan
-& .\.bundle_venv\Scripts\pip install fastmcp==0.2.0 requests > $null
+Write-Host "[3/6] Install dependencies (fastmcp=$FastMcpVersion + requests + pydantic)" -ForegroundColor Cyan
+& .\.bundle_venv\Scripts\pip install --upgrade fastmcp==$FastMcpVersion requests pydantic > $null
 
-$site = Get-ChildItem .bundle_venv\Lib\site-packages | Select-Object -First 1 | ForEach-Object { $_.Directory }
 if (-not (Test-Path server/lib)) { New-Item -ItemType Directory server/lib | Out-Null }
 
 Write-Host "[4/6] Copy packages" -ForegroundColor Cyan
-$packages = @('fastmcp','requests','urllib3','certifi','charset_normalizer','idna')
+$packages = @(
+  'fastmcp',
+  'requests','urllib3','certifi','charset_normalizer','idna',
+  'pydantic','pydantic_core','annotated_types','typing_extensions'
+)
 foreach ($p in $packages) {
   Get-ChildItem -Path ".bundle_venv/Lib/site-packages/$p*" -ErrorAction SilentlyContinue | ForEach-Object {
     Copy-Item $_.FullName -Destination server/lib -Recurse -Force
