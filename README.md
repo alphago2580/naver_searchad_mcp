@@ -1,213 +1,134 @@
-# Naver SearchAd MCP 
-> ⚡ .dxt 추가
-> ⚡ file system 확장이 설치된 claude desktop에게 이 페이지의 링크를 주고 설치하라고 명령해보세요.
+# Naver SearchAd MCP
 
-## 설치
+> Naver SearchAd 키워드 통계, 입찰가 추정 툴을 Claude Desktop 에서 바로 호출할 수 있는 MCP 서버 / DXT 확장.
 
-```bash
-# (A) 로컬 소스(현재 디렉터리)에서 설치: 저장소를 clone 하여 수정/개발 중일 때
-pip install .
+## 🚀 일반 사용자: 가장 쉬운 설치 (임베디드 DXT)
 
-# (B) PyPI 배포본에서 설치: 일반 사용 시 (주석 해제하여 사용)
-# pip install naver-searchad-mcp
+Python 설치 필요 없음 (Windows).
 
-# 설치 후 초기 실행 예시
-naver-searchad-mcp --api-key YOUR_KEY --secret-key YOUR_SECRET --customer-id YOUR_CID
+1. 최신 `naver-searchad-embedded-lite-<version>.dxt` 파일 다운로드
+2. Claude Desktop 열기 → Extensions 패널(또는 파일 드래그)로 .dxt 추가
+3. 확장 추가 UI에서 API Key / Secret / Customer ID 입력
+4. Tools 목록에서 `health` 실행 → `{ "status": "ok" }` 나오면 완료
+
+문제 시 Claude 로그에서 `[naver-searchad]` 메시지 참고.
+
+## 🔑 API 자격증명 설정
+
+필요 값:
+
+* NAVER_API_KEY
+* NAVER_SECRET_KEY
+* NAVER_CUSTOMER_ID
+
+DXT 설치 시 UI 필드에 직접 입력 (암호화 저장은 Claude 정책 따름). 개발/소스 실행 시에는 환경변수 또는 `.env` 지원.
+
+## 🛠 제공 Tools
+
+| 이름 | 설명 |
+|------|------|
+| health | 상태 확인 및 기본 파라미터 확인 |
+| get_keyword_stats | 최대 BATCH 단위로 키워드 통계 조회 (캐시 옵션) |
+| estimate_average_position_bids | 평균 노출 위치별 예상 입찰가 추정 |
+
+## 🧪 빠른 사용 예 (Claude 대화 중)
+
+```text
+/tool health
+/tool get_keyword_stats {"keywords":["나이키","운동화"],"show_detail":true}
 ```
 
-위에서 `pip install .` 는 "현재 디렉터리(점)"에 있는 패키지(소스)를 직접 설치하라는 의미이며, 패키지 이름이 점이 아니라 로컬 경로를 의미합니다. 패키지 레지스트리(Python Package Index)에 배포된 릴리스를 설치하려면 `pip install naver-searchad-mcp` 형태를 사용하세요.
+## 👩‍💻 개발자 / 고급 사용자
 
-## 모듈 실행
-
-```bash
-python -m naver_searchad_mcp --api-key YOUR_KEY --secret-key YOUR_SECRET --customer-id YOUR_CID
-```
-
-환경변수 사용:
+### A. 소스/호스트 Python 방식
 
 ```bash
-export NAVER_API_KEY=...
-export NAVER_SECRET_KEY=...
-export NAVER_CUSTOMER_ID=...
-python -m naver_searchad_mcp
+git clone https://github.com/alphago2580/naver_searchad_mcp.git
+cd naver_searchad_mcp
+pip install -e .
+export NAVER_API_KEY=... NAVER_SECRET_KEY=... NAVER_CUSTOMER_ID=...
+python -m naver_searchad_mcp --help
 ```
 
-.env 파일 사용 (.env.example 복사):
+Claude config (수동 등록) 예시:
 
-```bash
-cp .env.example .env  # Windows PowerShell: copy .env.example .env
-# .env 편집 후
-python -m naver_searchad_mcp
+```json
+"naver-searchad": {
+	"command": "python",
+	"args": ["-m", "naver_searchad_mcp"],
+	"env": {"NAVER_API_KEY": "...", "NAVER_SECRET_KEY": "...", "NAVER_CUSTOMER_ID": "..."}
+}
 ```
 
-## Tools
-
-- get_keyword_stats
-- estimate_average_position_bids
-- health
-
-## Docker
+### B. Docker
 
 ```bash
 docker build -t naver-searchad-mcp .
 docker run --rm -e NAVER_API_KEY=KEY -e NAVER_SECRET_KEY=SEC -e NAVER_CUSTOMER_ID=CID naver-searchad-mcp
 ```
 
-## Claude Desktop 연동 (MCP 서버 설정)
+## 📦 임베디드 DXT 빌드 (Windows)
 
-Claude Desktop(Anthropic)에서 이 패키지를 MCP 서버로 불러와 대화 중 Naver 광고 데이터를 조회할 수 있습니다.
-
-### 1. 설치
-
-이미 설치했다면 생략 가능합니다.
-
-```bash
-pip install naver-searchad-mcp  # 또는 소스 루트에서: pip install .
-```
-
-### 2. 환경 변수 설정 (택 1)
-
-1. OS 환경 변수 직접 설정
-
-PowerShell 예시:
-
-```powershell
-$env:NAVER_API_KEY = "YOUR_KEY"
-$env:NAVER_SECRET_KEY = "YOUR_SECRET"
-$env:NAVER_CUSTOMER_ID = "YOUR_CID"
-```
-
-1. .env 파일 사용 (권장)
-
-프로젝트 루트에 `.env` 파일 생성:
-
-```env
-NAVER_API_KEY=YOUR_KEY
-NAVER_SECRET_KEY=YOUR_SECRET
-NAVER_CUSTOMER_ID=YOUR_CID
-```
-
-(.env 사용 시 아래 config에서 env 블록을 생략해도 되고, 명시적으로 넣어도 됩니다.)
-
-### 3. Claude Desktop 설정 파일 위치
-
-| OS | 경로 |
-| --- | --- |
-| Windows | `%APPDATA%\\Claude\\claude_desktop_config.json` |
-| macOS | `~/Library/Application Support/Claude/claude_desktop_config.json` |
-| Linux (베타) | `~/.config/Claude/claude_desktop_config.json` |
-
-파일이 없으면 Claude Desktop을 한 번 실행 후 종료하면 생성됩니다.
-
-### 4. config 예시 추가
-
-`claude_desktop_config.json` 의 `mcpServers` 객체 안에 항목을 추가합니다. (다른 서버가 이미 있다면 JSON 쉼표 주의)
-
-```jsonc
-{
-	// ... 기존 설정 ...
-	"mcpServers": {
-		// ... 다른 서버 ...
-		"naver-searchad": {
-			"command": "naver-searchad-mcp", // 또는 "python"
-			"args": [
-				// python을 사용하는 경우: "-m", "naver_searchad_mcp"
-			],
-			"env": {
-				"NAVER_API_KEY": "YOUR_KEY",
-				"NAVER_SECRET_KEY": "YOUR_SECRET",
-				"NAVER_CUSTOMER_ID": "YOUR_CID"
-			}
-		}
-	}
-}
-```
-
-python -m 형태를 쓰고 싶다면:
-
-```jsonc
-"naver-searchad": {
-	"command": "python",
-	"args": ["-m", "naver_searchad_mcp"],
-	"env": {
-		"NAVER_API_KEY": "YOUR_KEY",
-		"NAVER_SECRET_KEY": "YOUR_SECRET",
-		"NAVER_CUSTOMER_ID": "YOUR_CID"
-	}
-}
-```
-
-### 5. Claude 재시작 & 동작 확인
-
-1. Claude Desktop 완전히 종료 후 다시 실행
-2. 신규 대화 열기 → 우측/상단 Tools 패널(또는 / 입력)에서 서버가 로드되었는지 확인
-3. `health` 툴 실행 → 정상 응답이면 연결 OK
-4. `get_keyword_stats` 실행 시 필요한 파라미터를 Claude가 물으면 값 제공
-
-### 6. 빠른 점검 체크리스트
-
-- 패키지 설치: `pip show naver-searchad-mcp` 로 확인
-- 실행 파일 인식: 터미널에서 `naver-searchad-mcp --help` 동작 여부
-- JSON 구문 오류: config 저장 후 중괄호/쉼표 확인 (JSON Lint 권장)
-- 권한: Windows에서 보안 소프트웨어가 python 실행 차단하지 않는지
-
-### 7. 로깅 / 디버깅
-
-Claude UI에서 서버가 안 뜨는 경우:
-
-```powershell
-naver-searchad-mcp --api-key "YOUR_KEY" --secret-key "YOUR_SECRET" --customer-id "YOUR_CID" --debug
-```
-직접 실행하여 에러 스택을 먼저 해결 후 config로 다시 연결.
-
-### 8. 안전한 키 관리 팁
-
-- 공개 저장소에 `.env` 커밋 금지 (`.gitignore` 확인)
-- 키 로테이션 주기적으로 수행 (유출 의심 시 즉시 교체)
-- 최소 권한 CID 사용
-
-### 9. FAQ
-
-Q. 툴 목록에 안 보입니다.
-
-- A: config JSON에 `mcpServers` 루트 키가 존재하는지, JSON 파싱 오류가 없는지, 재시작했는지 확인.
-
-Q. 인증 오류(401/403)가 납니다.
-
-- A: 키/시크릿/CID 오타, 혹은 네이버 광고 API 권한 여부 재확인.
-
-Q. Windows에서 한글 경로 때문에 실행 실패.
-
-- A: Python 설치 경로에 공백/한글이 포함된 경우 `"command": "python"` 대신 절대경로 (`C:\\Python312\\python.exe`) 명시 권장.
-
-## DXT 임베디드 Python 번들 (Windows 실험적)
-
-`.dxt` 내부에 Windows embeddable Python을 포함해 사용자가 Python을 설치하지 않아도 실행되도록 할 수 있습니다.
-
-### 준비 절차
+개발자가 직접 재생성할 때:
 
 ```powershell
 cd dxt_extension
-powershell -ExecutionPolicy Bypass -File .\prepare_embedded_python.ps1 -PyVersion 3.11.9
-# (이미 vendor 한 경우 생략 가능) fastmcp/requests 벤더
-powershell -ExecutionPolicy Bypass -File .\build_vendor.ps1
-dxt pack . naver-searchad.dxt
+pwsh .\prepare_embedded_python.ps1 -PyVersion 3.11.9   # 임베디드 런타임 (필요 시 최초 1회)
+pwsh .\build_vendor.ps1                               # vendor 라이브러리 (fastmcp/requests 등)
+dxt pack . naver-searchad-embedded-lite-<ver>.dxt
 ```
 
-### 작동 방식
+주요 파일:
 
-- `manifest.json` 의 `platform_overrides.win32.command` 가 임베디드 `python.exe` 를 직접 호출
-- `_pth` 파일에 `server/lib` 경로 추가 → vendor 라이브러리 import 가능
-- 호스트 Python 이 있어도 우선 embedded 실행 (경로 우선 사용)
+```text
+dxt_extension/
+	manifest.json               # DXT 메타 + platform_overrides.win32
+	server/main.py              # 경로 탐지 + FastMCP 구동
+	naver_searchad_mcp/         # 번들 패키지 (필요 최소 코드)
+	server/lib/                 # vendor 사이트 패키지
+	runtime/win32/python/       # 임베디드 Python (재생성 가능)
+```
 
-### 주의
+## 🧹 저장소 구조 & 정리
 
-- embeddable 패키지에는 venv/ensurepip 미포함 → 추가 라이브러리는 vendor 방식으로만 추가
-- 용량 증가(수~10MB) 감수 필요
-- macOS / Linux 지원은 별도 런타임 디렉터리와 빌드 과정 필요(추후 확장)
+커밋 대상 유지 권장:
 
-### 문제 해결
+* `naver_searchad_mcp/` (핵심 코드)
+* `dxt_extension/manifest.json`, `server/main.py`, `prepare_embedded_python.ps1`, `build_vendor.ps1`
+* vendor 라이브러리(재현성 위해 커밋 가능) 또는 스크립트로 재생성 선택
 
-- 실행 실패 시: Claude 로그에서 command 경로(`runtime/win32/python/python.exe`) 존재 여부 확인
-- `_pth` 수정 누락: 라이브러리 import 에러(ModuleNotFoundError) 발생 → `_pth` 파일 끝에 `.` 및 `../../server/lib` 추가
+커밋 제외(.gitignore 추가됨):
+
+* `*.dxt` 산출물
+* `dxt_extension/runtime/` (임베디드 재생성 가능)
+* `_inspect/`, `.bundle_venv/`
+
+## 🔍 트러블슈팅
+
+| 증상 | 원인 | 해결 |
+|------|------|------|
+| ModuleNotFoundError (임베디드) | `_pth` 경로/ sys.path 삽입 실패 | 최신 DXT 재설치 (버전 증가) |
+| Tools 미표시 | Claude 재시작 필요 또는 Key 누락 | Claude 완전 종료 후 재시작 |
+| 401/403 | 잘못된 API Key | 키 재확인 / 재발급 |
+| 지연/타임아웃 | API rate 제한 | 키워드 배치 줄이기 |
+
+## 🔐 보안/키 관리
+
+* `.env` / `api_keys.txt` 는 커밋 금지
+* 필요 최소 권한 키 사용
+* 의심 시 즉시 키 회전
+
+## 🧾 버전
+
+* 패키지: `0.2.5`
+* DXT manifest 동일 버전 태깅 (캐시 무효화 목적)
+
+## 📄 라이선스
+
+Proprietary (내부/허가된 사용 범위로 제한). 필요 시 LICENSE 조정.
+
+---
+
+피드백 / 버그 제보 환영: Issue 등록 또는 PR.
+> ⚡ .dxt 추가
 

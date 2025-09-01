@@ -22,3 +22,16 @@ Thumbs.db
 /.mypy_cache/
 /.pytest_cache/
 /.ruff_cache/
+
+# DXT build artifacts / inspection
+*.dxt
+dxt_extension/_inspect/
+
+# Embedded runtime (can be re-generated)
+dxt_extension/runtime/
+
+# Local bundle venv used during vendor builds
+dxt_extension/.bundle_venv/
+
+# VSCode / tooling
+.vscode/

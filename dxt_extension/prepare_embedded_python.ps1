@@ -21,7 +21,10 @@ $pthFile = Get-ChildItem $dest -Filter "python*.pth" -ErrorAction SilentlyContin
 if (-not $pthFile) { $pthFile = Get-ChildItem $dest -Filter "python*._pth" -ErrorAction SilentlyContinue | Select-Object -First 1 }
 if ($pthFile) {
   $existing = Get-Content $pthFile.FullName
-  $linesToAdd = @('.', '../../server/lib')
+  # Add search paths relative to the embedded python directory.
+  # Original attempt used '../../server/lib' but actual depth from runtime/win32/python to server/lib is '../../../server/lib'
+  # Also add the root so that 'naver_searchad_mcp' package is importable.
+  $linesToAdd = @('.', '../../../server/lib', '../../../')
   foreach ($ln in $linesToAdd) {
     if (-not ($existing -contains $ln)) { Add-Content $pthFile.FullName $ln }
   }
