@@ -179,3 +179,35 @@ Q. 인증 오류(401/403)가 납니다.
 Q. Windows에서 한글 경로 때문에 실행 실패.
 
 - A: Python 설치 경로에 공백/한글이 포함된 경우 `"command": "python"` 대신 절대경로 (`C:\\Python312\\python.exe`) 명시 권장.
+
+## DXT 임베디드 Python 번들 (Windows 실험적)
+
+`.dxt` 내부에 Windows embeddable Python을 포함해 사용자가 Python을 설치하지 않아도 실행되도록 할 수 있습니다.
+
+### 준비 절차
+
+```powershell
+cd dxt_extension
+powershell -ExecutionPolicy Bypass -File .\prepare_embedded_python.ps1 -PyVersion 3.11.9
+# (이미 vendor 한 경우 생략 가능) fastmcp/requests 벤더
+powershell -ExecutionPolicy Bypass -File .\build_vendor.ps1
+dxt pack . naver-searchad.dxt
+```
+
+### 작동 방식
+
+- `manifest.json` 의 `platform_overrides.win32.command` 가 임베디드 `python.exe` 를 직접 호출
+- `_pth` 파일에 `server/lib` 경로 추가 → vendor 라이브러리 import 가능
+- 호스트 Python 이 있어도 우선 embedded 실행 (경로 우선 사용)
+
+### 주의
+
+- embeddable 패키지에는 venv/ensurepip 미포함 → 추가 라이브러리는 vendor 방식으로만 추가
+- 용량 증가(수~10MB) 감수 필요
+- macOS / Linux 지원은 별도 런타임 디렉터리와 빌드 과정 필요(추후 확장)
+
+### 문제 해결
+
+- 실행 실패 시: Claude 로그에서 command 경로(`runtime/win32/python/python.exe`) 존재 여부 확인
+- `_pth` 수정 누락: 라이브러리 import 에러(ModuleNotFoundError) 발생 → `_pth` 파일 끝에 `.` 및 `../../server/lib` 추가
+

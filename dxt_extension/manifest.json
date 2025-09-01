@@ -19,6 +19,15 @@
         "NAVER_API_KEY": "${user_config.api_key}",
         "NAVER_SECRET_KEY": "${user_config.secret_key}",
         "NAVER_CUSTOMER_ID": "${user_config.customer_id}"
+      },
+      "platform_overrides": {
+        "win32": {
+          "command": "${__dirname}/runtime/win32/python/python.exe",
+          "args": ["${__dirname}/server/main.py"],
+          "env": {
+            "PYTHONPATH": "${__dirname};${__dirname}/server/lib"
+          }
+        }
       }
     }
   },
